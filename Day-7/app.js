@@ -14,6 +14,11 @@ app.use((req,res,next)=>{
     next()
 })
 
+app.use('/user',(req,res,next) =>{
+    console.log(`🏆 This middleware only gets called for /user only`)
+    next()
+})
+
 app.use('/',route)
 
 
