@@ -3,15 +3,19 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const errorController = require('./controllers/errorController');
+const errorController = require('./controllers/error');
 
 const app = express();
+// const pool = require('./util/database')
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-const adminRoutes = require('./routes/adminRoutes');
-const shopRoutes = require('./routes/shopRoutes');
+const adminRoutes = require('./routes/admin');
+const shopRoutes = require('./routes/shop');
+
+
+// pool.execute('SELECT * FROM products').then((res) => console.log(res[0]))
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
