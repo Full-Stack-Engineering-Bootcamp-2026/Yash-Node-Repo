@@ -1,29 +1,28 @@
-const mongodb = require("mongodb");
-
+const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
+require('dotenv').config();
 
-let _db ;
+let _db;
 
-const mongoConnect = (callback) => {
-  MongoClient.connect(
-    "mongodb+srv://yash-node-user:QO1a0gPOvMPCGGeO@cluster0.mrtvws2.mongodb.net/?appName=Cluster0",
-  )
-    .then((client) => {
-      console.log(`Connected successfully !! `);
-      _db = client.db('/shop')
+const mongoConnect = callback => {
+  MongoClient.connect(process.env.MONGO_ATLAS_CONNECTION_URI)
+    .then(client => {
+      console.log('Connected!');
+      _db = client.db();
       callback();
     })
-    .catch((err) => {console.log(err)
-      throw err
+    .catch(err => {
+      console.log(err);
+      throw err;
     });
 };
 
-const getDb = ()=>{
-  if(_db){
+const getDb = () => {
+  if (_db) {
     return _db;
   }
-  throw "No dbs found"
-}
+  throw 'No database found!';
+};
 
 exports.mongoConnect = mongoConnect;
 exports.getDb = getDb;
