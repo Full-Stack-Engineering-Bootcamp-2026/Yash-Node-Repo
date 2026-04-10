@@ -26,14 +26,21 @@ app.use(express.static(path.join(__dirname, "public")));
 //     })
 //     .catch((err) => console.log(er));
 // });
+app.use((req, res, next) => {
+  User.findById('5baa2528563f16379fc8a610')
+    .then(user => {
+      req.user = new User(user.name, user.email, user.cart, user._id);
+      next();
+    })
+    .catch(err => console.log(err));
+});
 
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-mongoConnect(client=>{
-  console.log(client);
+mongoConnect(()=>{
   
   app.listen(8080,()=> console.log(`Running on Port 8080`))
 })
