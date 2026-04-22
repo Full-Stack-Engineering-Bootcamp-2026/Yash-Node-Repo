@@ -7,7 +7,7 @@
   const MongoDBStore = require("connect-mongodb-session")(session);
   const errorController = require("./controllers/error");
   const User = require("./models/user");
-
+const csrf = require('csurf')
   const app = express();
 
   // console.log()
@@ -16,6 +16,7 @@
     collection: "sessions",
   });
 
+  const csrfProtection = csrf()
   console.log("URi "+process.env.MONGO_ATLAS_CONNECTION_URI);
   app.set("view engine", "ejs");
   app.set("views", "views");
@@ -50,6 +51,14 @@
       })
       .catch((err) => console.log(err));
   });
+
+  app.use(csrfProtection)
+
+app.use((req,res,next)=>{
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken()
+  next()
+})
 
   app.use("/admin", adminRoutes);
   app.use(shopRoutes);

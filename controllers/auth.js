@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
+const sendEmail = require('../util/sendEmail')
 
 exports.getLogin = (req, res, next) => {
   res.render("auth/login", {
@@ -65,12 +66,20 @@ exports.postSignup = async (req, res, next) => {
     cart: { items: [] },
   });
   await user.save();
-  res.redirect("/login");
+  res.redirect("/login")
+  return sendEmail(email);
+  
 };
 
 exports.postLogout = (req, res, next) => {
   req.session.destroy((err) => {
     console.log(err);
     res.redirect("/");
+  });
+};
+exports.getReset = (req, res, next) => {
+  res.render("auth/reset", {
+    path: "/reset",
+    pageTitle: "Reset",
   });
 };
