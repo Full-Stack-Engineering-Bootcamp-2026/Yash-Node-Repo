@@ -1,25 +1,43 @@
-import express from 'express';
-import mongoose from 'mongoose';
+import express, { Request, Response } from "express";
+import multer from "multer";
+import path from "path";
+import prductRouter from "./routes/product.route.js";
+import { User } from "./modules/user.js";
+import { Order } from "./modules/order.js";
+import { Product } from "./modules/product.js";
+import mongoose from "mongoose";
+import { log } from "node:console";
+
+const MONGODB_URI = process.env.MONGO_ATLAS_CONNECTION_URI as string;
+
 const app = express();
 const port = 8080;
-import 'dotenv/config'
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const connectDB = async () => {
+app.use("/images", express.static("images"));
+
+app.use("/", prductRouter);
+
+const startServer = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_ATLAS_CONNECTION_URI as string);
-
-    console.log(` MongoDB Connected successfully...`);
-  } catch (error) {
-    console.error(" MongoDB connection failed:", error);
-    process.exit(1);
+    await mongoose.connect(MONGODB_URI);
+    app.listen(3000);
+    console.log("MongoDB connected successfully!!!");
+    console.log("server started at 3000");
+  } catch (err) {
+    console.log(err);
   }
 };
-connectDB()
 
-app.listen(port, () => {
-  return console.log(`Express is listening at http://localhost:${port}`);
-});
+startServer();
+
+mongoose
+  .connect(MONGODB_URI)
+  .then((result) => {
+    app.listen(port);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
