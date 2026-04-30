@@ -1,29 +1,67 @@
-import express, { Request, Response } from "express";
-import path from "path";    
+import express, { Application as ExpressApp } from "express";
+import dotenv from "dotenv";
+import cors from "cors";
 import mongoose from "mongoose";
+import { Container } from "typedi";
+import { FeedRoutes } from "./domains/social-media/routes/feed.routes.js";
+import "reflect-metadata";
+import { UserRoutes } from "./domains/social-media/routes/user.routes.js";
+import { AuthRoutes } from "./domains/social-media/routes/auth.routes.js";
 
 
-const MONGODB_URI = process.env.MONGO_ATLAS_CONNECTION_URI as string;
-
-const app = express();
-const port = 8080;
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+dotenv.config();
 
 
-app.listen(port,()=>{
-  console.log(`server started at ${port}`)
-})
-// const startServer = async () => {
-//   try {
-//     await mongoose.connect(MONGODB_URI);
-//     app.listen(8080);
-//     console.log("MongoDB connected successfully!!!");
-//     console.log("server started at 8080");
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
+class Application {
+  public app: ExpressApp;
+  private port: number;
+  private mongoUri: string;
 
-// startServer();
+  constructor() {
+    this.app = express();
+    this.port = parseInt(process.env.PORT || "3000", 10);
+    this.mongoUri = process.env.MONGO_ATLAS_CONNECTION_URI || "";
+    console.log(this.mongoUri);
+    this.initializeMiddleware();
+    this.initializeRoutes();
+  }
+
+  private initializeMiddleware(): void {
+    this.app.use(cors());
+    this.app.use(express.json());
+  }
+
+  private initializeRoutes(): void {
+    const feedRoutes = Container.get(FeedRoutes);
+    const userRoutes = Container.get(UserRoutes);
+    const authRoutes = Container.get(AuthRoutes);
+
+    this.app.use("/feed", feedRoutes.router);
+    this.app.use("/user", userRoutes.router);
+    this.app.use("/auth", authRoutes.router);
+  }
+
+  private async connectDatabase(): Promise<void> {
+    try {
+      await mongoose.connect(this.mongoUri);
+      console.log("MongoDB connected");
+    } catch (error) {
+      console.log(error);
+      
+      console.error("MongoDB connection failed");
+      process.exit(1);
+    }
+  }
+
+  public async start(): Promise<void> {
+    await this.connectDatabase();
+    this.app.listen(this.port, () => {
+      console.log(`Server listening on http://localhost:${this.port}`);
+    });
+  }
+}
+
+const application = new Application();
+application.start();
+
+export default application.app;
